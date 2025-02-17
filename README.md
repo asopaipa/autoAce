@@ -24,3 +24,5 @@
 -que el parámetro de bitrate te lo dé automáticamente el ffprobe
 
 -que se detecten fuentes de baja calidad (con saltos, inestables, etc.)
+
+-añadir seguridad (al menos la posibilidad de proteger la página con contraseña)
