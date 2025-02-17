@@ -3,7 +3,7 @@
 
 2- Accede a http://IP:5000 e introduce tus streams y tus fuentes
 
-3- pyhon check_sources.py (es conveniente programar su ejecución)
+3- pyhon check_sources.py (se recomienda programar su ejecución)
 
 4- Desde la interfaz web, arranca el docker una vez tengas al menos una fuente válida
 
