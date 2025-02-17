@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestor de Eventos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-4">Eventos</h1>
+    <a href="{{ url_for('new_event') }}" class="btn btn-primary mb-3">Nuevo Evento</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Título</th>
+                <th>Puerto</th>
+                <th>Docker Activo</th>
+                <th>Content ID</th>
+                <th>Fuentes</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evento in eventos %}
+            <tr>
+                <td>{{ evento.name }}</td>
+                <td>{{ evento.title }}</td>
+                <td>{{ evento.port }}</td>
+                <td>{{ evento.docker_active }}</td>
+                <td>{{ evento.content_id }}</td>
+                <td>
+                    <ul>
+                        {% for fuente in evento.sources %}
+                        <li>{{ fuente.source }} - Valid: {{ fuente.valid }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_event', nombre=evento.name) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <form action="{{ url_for('delete_event', nombre=evento.name) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar evento?')">Eliminar</button>
+                    </form>
+                    <form action="{{ url_for('start_event', nombre=evento.name) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-success">Iniciar Docker</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
