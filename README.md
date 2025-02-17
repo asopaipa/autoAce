@@ -26,3 +26,5 @@
 -que se detecten fuentes de baja calidad (con saltos, inestables, etc.)
 
 -añadir seguridad (al menos la posibilidad de proteger la página con contraseña)
+
+-obtener la url publicable (ts o similar) automáticamente desde un m3u8
