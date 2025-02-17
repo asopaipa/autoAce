@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar Evento</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+    function agregarFuente() {
+        var container = document.getElementById("fuentesContainer");
+        var input = document.createElement("input");
+        input.type = "text";
+        input.name = "sources";
+        input.className = "form-control mt-2";
+        input.placeholder = "Ingrese fuente";
+        container.appendChild(input);
+    }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-4">Editar Evento {{ evento.name }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="post">
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" class="form-control" value="{{ evento.name }}" readonly>
+        </div>
+        <div class="form-group">
+            <label>Título</label>
+            <input type="text" name="titulo" class="form-control" value="{{ evento.title }}" required>
+        </div>
+        <div class="form-group">
+            <label>Puerto</label>
+            <input type="number" name="puerto" class="form-control" value="{{ evento.port }}" required>
+        </div>
+        <div class="form-group">
+            <label>Service Access Token</label>
+            <input type="text" name="token" class="form-control" value="{{ evento.service_access_token }}">
+        </div>
+        <div class="form-group">
+            <label>Tracker</label>
+            <input type="text" name="tracker" class="form-control" value="{{ evento.tracker }}">
+        </div>
+        <div class="form-group">
+            <label>Host</label>
+            <input type="text" name="host" class="form-control" value="{{ evento.host }}" required>
+        </div>
+        <div class="form-group">
+            <label>Bitrate</label>
+            <input type="number" name="bitrate" class="form-control" value="{{ evento.bitrate }}" required>
+        </div>
+        <div class="form-group">
+            <label>Fuentes</label>
+            <div id="fuentesContainer">
+                {% for fuente in evento.sources %}
+                <input type="text" name="sources" class="form-control mt-2" value="{{ fuente.source }}">
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-secondary mt-2" onclick="agregarFuente()">Agregar otra fuente</button>
+        </div>
+        <button type="submit" class="btn btn-primary">Actualizar Evento</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>
