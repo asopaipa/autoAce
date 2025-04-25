@@ -16,35 +16,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necesitamos todo el historial para mirror
-
+          fetch-depth: 0 # Necesitamos todo el historial para mirror 
       - name: Set up GitLab remote and push
         env:
           GITLAB_PAT: ${{ secrets.GITLAB_PAT }}
-          # Necesitas la URL COMPLETA del repo GitLab correspondiente
-          # Ej: https://gitlab.com/TU_USUARIO_GL/NOMBRE_REPO_GL.git
-          # Puedes ponerla directamente aquí o mejor, desde un secreto
           GITLAB_REPO_URL: ${{ secrets.GITLAB_REPO_URL || 'https://gitlab.com/test2494916/autoAce.git' }}
-          # Extraer el usuario/grupo y repo de la URL de GitLab para construir la URL con token
-          GITLAB_TARGET_PATH: ${{ secrets.GITLAB_REPO_URL || 'https://gitlab.com/test2494916/autoAce.git' }}
+          # Usamos el token GITHUB_TOKEN incorporado para clonar el repo actual de forma segura
+          GITHUB_CLONE_URL: "https://oauth2:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
 
         run: |
           echo "Configurando Git..."
           git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com" # O tu email
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
-          # Extraer el host y path de la URL de GitLab
-          GITLAB_HOST=$(echo "$GITLAB_TARGET_PATH" | sed -E 's|https?://([^/]+)/.*|\1|')
-          GITLAB_PATH=$(echo "$GITLAB_TARGET_PATH" | sed -E 's|https?://[^/]+/(.*)|\1|')
-
-          # Construir la URL con el token PAT
+          # Construir URL de GitLab con PAT (asegúrate que GITLAB_REPO_URL es la URL HTTPS base)
+          GITLAB_HOST=$(echo "$GITLAB_REPO_URL" | sed -E 's|https?://([^/]+)/.*|\1|')
+          GITLAB_PATH=$(echo "$GITLAB_REPO_URL" | sed -E 's|https?://[^/]+/(.*)|\1|')
           GITLAB_PUSH_URL="https://oauth2:${GITLAB_PAT}@${GITLAB_HOST}/${GITLAB_PATH}"
 
-          echo "Añadiendo remoto GitLab..."
-          git remote add gitlab "$GITLAB_PUSH_URL"
+          # Usar un directorio temporal para el mirror clone
+          MIRROR_DIR="gitlab_mirror_temp"
+          echo "Clonando desde GitHub (mirror) a $MIRROR_DIR..."
+          git clone --mirror "$GITHUB_CLONE_URL" "$MIRROR_DIR"
+          cd "$MIRROR_DIR"
 
-          echo "Pusheando todo a GitLab (mirror)..."
-          # Usar --mirror para enviar todo (ramas, tags) y forzar
-          git push --mirror gitlab
+          echo "Pusheando ramas a GitLab..."
+          # Empuja todas las ramas locales (refs/heads/*) a las remotas correspondientes, forzando.
+          git push --force "$GITLAB_PUSH_URL" 'refs/heads/*:refs/heads/*'
 
-          echo "Backup a GitLab completado."
+          echo "Pusheando tags a GitLab..."
+          # Empuja todas las tags locales (refs/tags/*) a las remotas correspondientes, forzando.
+          git push --force "$GITLAB_PUSH_URL" 'refs/tags/*:refs/tags/*'
+
+          # Limpieza (opcional)
+          cd ..
+          rm -rf "$MIRROR_DIR"
+
+          echo "Backup a GitLab completado (ramas y tags)."
