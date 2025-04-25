@@ -1,12 +1,5 @@
-            - name: Gitlab Sync
+            - name: Mirror to GitLab and run GitLab CI
   # You may pin to the exact commit or the version.
-  # uses: action-pack/gitlab-sync@38077a591a7f2ceb6ff6026e6beb2954a3be0f93
-  uses: action-pack/gitlab-sync@v3.03
-  with:
-    # GitLab repo URL
-    url: 
-    # GitLab username
-    username: 
-    # GitLab token
-    token: 
+  # uses: SvanBoxel/gitlab-mirror-and-ci-action@13f58d2ae6e838d2b8a446f55afa5d69ad7ab0d2
+  uses: SvanBoxel/gitlab-mirror-and-ci-action@0.2
           
