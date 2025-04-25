@@ -1,5 +1,50 @@
-            - name: Mirror to GitLab and run GitLab CI
-  # You may pin to the exact commit or the version.
-  # uses: SvanBoxel/gitlab-mirror-and-ci-action@13f58d2ae6e838d2b8a446f55afa5d69ad7ab0d2
-  uses: SvanBoxel/gitlab-mirror-and-ci-action@0.2
-          
+name: Backup to GitLab
+
+on:
+  push:
+    branches:
+      - '**' # Ejecutar en cada push a cualquier rama
+  schedule:
+    # Ejecutar cada día a las 03:00 UTC (o la frecuencia que quieras)
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Permitir ejecución manual
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necesitamos todo el historial para mirror
+
+      - name: Set up GitLab remote and push
+        env:
+          GITLAB_PAT: ${{ secrets.GITLAB_PAT }}
+          # Necesitas la URL COMPLETA del repo GitLab correspondiente
+          # Ej: https://gitlab.com/TU_USUARIO_GL/NOMBRE_REPO_GL.git
+          # Puedes ponerla directamente aquí o mejor, desde un secreto
+          GITLAB_REPO_URL: ${{ secrets.GITLAB_REPO_URL || 'https://gitlab.com/test2494916/autoAce.git' }}
+          # Extraer el usuario/grupo y repo de la URL de GitLab para construir la URL con token
+          GITLAB_TARGET_PATH: ${{ secrets.GITLAB_REPO_URL || 'https://gitlab.com/test2494916/autoAce.git' }}
+
+        run: |
+          echo "Configurando Git..."
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com" # O tu email
+
+          # Extraer el host y path de la URL de GitLab
+          GITLAB_HOST=$(echo "$GITLAB_TARGET_PATH" | sed -E 's|https?://([^/]+)/.*|\1|')
+          GITLAB_PATH=$(echo "$GITLAB_TARGET_PATH" | sed -E 's|https?://[^/]+/(.*)|\1|')
+
+          # Construir la URL con el token PAT
+          GITLAB_PUSH_URL="https://oauth2:${GITLAB_PAT}@${GITLAB_HOST}/${GITLAB_PATH}"
+
+          echo "Añadiendo remoto GitLab..."
+          git remote add gitlab "$GITLAB_PUSH_URL"
+
+          echo "Pusheando todo a GitLab (mirror)..."
+          # Usar --mirror para enviar todo (ramas, tags) y forzar
+          git push --mirror gitlab
+
+          echo "Backup a GitLab completado."
